@@ -228,10 +228,10 @@ IsTitle() checks that the first letter of each word is uppercase and all leading
 
 ```cpp
 // Follows title rule
-strutil::IsTitle("Hello World") // -> true
+strutil::IsTitle("Hello World"); // -> true
 
 // Doesn't follow rule (leading letters are uppercase)
-strutil::IsTitle("Hello WoRld") // -> false
+strutil::IsTitle("Hello WoRld"); // -> false
 ```
 
 ### ZFill
