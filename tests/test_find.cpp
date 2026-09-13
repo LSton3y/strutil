@@ -1,3 +1,6 @@
+// Copyright (c) 2026 LSton3y
+// SPDX-License-Identifier: MIT
+
 #include <gtest/gtest.h>
 #include "strutil/strutil.hpp"
 

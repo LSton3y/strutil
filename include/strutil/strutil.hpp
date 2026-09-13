@@ -1,3 +1,6 @@
+// Copyright (c) 2026 LSton3y
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <string>
