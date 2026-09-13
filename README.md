@@ -64,14 +64,14 @@ Tests use GoogleTest, fetched automatically via CMake's `FetchContent` — no ma
 
 ```bash
 cmake -S . -B build
-cmake --build build
+cmake --build build --config Debug
 ```
 
 ### Run tests
 
 ```bash
 cd build
-ctest --output-on-failure
+ctest -C Debug --output-on-failure
 ```
 
 Or run the test binary directly:
@@ -80,6 +80,10 @@ Or run the test binary directly:
 ./build/tests/strutil_tests        # Linux/macOS
 .\build\tests\Debug\strutil_tests.exe   # Windows (MSVC multi-config)
 ```
+> On Windows, CMake's default Visual Studio generator is multi-config —
+> always pass a matching `--config`/`-C` to `cmake --build` and `ctest`.
+> On Linux/macOS with Makefiles or Ninja this isn't needed, but it doesn't hurt to include.
+
 
 ## API Reference
 
