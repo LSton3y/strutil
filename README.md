@@ -33,7 +33,7 @@ include(FetchContent)
 
 FetchContent_Declare(
     strutil
-    GIT_REPOSITORY https://github.com/<you>/strutil.git
+    GIT_REPOSITORY https://github.com/LSton3y/strutil.git
     GIT_TAG main
 )
 
