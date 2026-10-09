@@ -20,9 +20,12 @@ namespace strutil {
 */
 // Case methods
 std::string Capitalize(std::string param);
+char Lower(char c);
 std::string Lower(std::string param);
+char SwapCase(char c);
 std::string SwapCase(std::string param);
 std::string Title(std::string_view param);
+char Upper(char c);
 std::string Upper(std::string param);
 bool EqualsIgnoreCase(std::string_view param1, std::string_view param2);
 
@@ -149,7 +152,9 @@ template <typename T>
 std::string ToString(const T& val);
 
 // Naming convention methods
+std::string ToSepCase(std::string_view param, char sep);
 std::string ToSnakeCase(std::string_view param);
+std::string ToKebabCase(std::string_view param);
 
 // Other methods
 std::size_t Count(
@@ -197,31 +202,42 @@ inline std::string Capitalize(std::string param) {
 }
 
 
-// Converts a string to lowercase
+// Converts a string or char to lowercase
+inline char Lower(char c) {
+    return std::tolower(static_cast<unsigned char>(c));
+}
+
 inline std::string Lower(std::string param) {
     for (auto& c : param) {
-        c = std::tolower(static_cast<unsigned char>(c));
+        c = Lower(c);
     }
 
     return param;
 }
 
-// Converts a string to uppercase
+// Converts a string or char to uppercase
+inline char Upper(char c) {
+    return std::toupper(static_cast<unsigned char>(c));
+}
+
 inline std::string Upper(std::string param) {
     for (auto& c : param) {
-        c = std::toupper(static_cast<unsigned char>(c));
+        c = Upper(c);
     }
 
     return param;
 }
 
 
-// Swaps the case of each letter in a string
+// Swaps the case of each letter in a string or char
+inline char SwapCase(char c) {
+    return std::isupper(c) ? static_cast<char>(std::tolower(c))
+                            : static_cast<char>(std::toupper(c));
+}
+
 inline std::string SwapCase(std::string param) {
-    for (std::size_t i = 0; i < param.length(); ++ i) {
-        unsigned char c = static_cast<unsigned char>(param[i]);
-        param[i] = std::isupper(c) ? static_cast<char>(std::tolower(c))
-                                    : static_cast<char>(std::toupper(c));
+    for (auto& ch : param) {
+        ch = SwapCase(ch);
     }
 
     return param;
@@ -881,44 +897,85 @@ std::string ToString(const T& val) {
 /*
     Naming convention methods
 */
-// Converts a string to snake case
-inline std::string ToSnakeCase(std::string_view param) {
-std::string result;
-    result.reserve(param.size() + 4); // Reserve space to avoid reallocations
+// Converts a string to specified separator case
+inline std::string ToSepCase(std::string_view param, char sep) {
+    std::string result;
+    result.reserve(param.size() + 4); // Reserve space
 
-    bool lastWasUnderScore = true; // Prevents leading underscores
+    bool lastWasSep = true; // Prevents leading separators
 
-    for (size_t i = 0; i < param.size(); ++i) {
+    for (std::size_t i = 0; i < param.size(); ++i) {
         char c = param[i];
 
-        if (c == ' ' || c == '-' || c == '_') {
-            if (!lastWasUnderScore) {
-                result.push_back('_');
-                lastWasUnderScore = true;
+        if (c == ' ' ||c == '-' || c == '_' || c == sep) {
+            if (!lastWasSep) {
+                result.push_back(sep);
+                lastWasSep = true;
             }
         } 
         else if (std::isupper(static_cast<unsigned char>(c))) {
             // Insert underscore before uppercase letters if preceded by a lowercase letter or digit
-            if (!lastWasUnderScore && i > 0 && 
+            if (!lastWasSep && i > 0 && 
                 (std::islower(static_cast<unsigned char>(param[i - 1])) || 
                  std::isdigit(static_cast<unsigned char>(param[i - 1])))) {
-                result.push_back('_');
+                result.push_back(sep);
             }
             result.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
-            lastWasUnderScore = false;
+            lastWasSep = false;
         } 
         else {
             result.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
-            lastWasUnderScore = false;
+            lastWasSep = false;
         }
     }
 
     // Clean up trailing underscore if the string ended with a separator
-    if (!result.empty() && result.back() == '_') {
+    if (!result.empty() && result.back() == sep) {
         result.pop_back();
     }
 
     return result;
+}
+
+
+// Converts a string to snake case
+inline std::string ToSnakeCase(std::string_view param) {
+    return ToSepCase(param, '_');
+}
+
+
+// Converts a string to kebab case
+inline std::string ToKebabCase(std::string_view param) {
+    return ToSepCase(param, '-');
+}
+
+
+// Converts a string to camel case
+inline std::string ToCamelCase(std::string_view param) {
+    std::string result;
+    result.reserve(param.size() + 4); // Reserve space
+
+    bool wasLower = true;
+    
+    for (std::size_t i = 0; i < param.size(); ++i) {
+        char c = param[i];
+
+        if (c == ' ' ||c == '-' || c == '_') {
+            continue;
+        } 
+        else if (std::isupper(static_cast<unsigned char>(c))) {
+            // Insert underscore before uppercase letters if preceded by a lowercase letter or digit
+            if (wasLower && std::isdigit(static_cast<unsigned char>(param[i - 1]))) {
+                result.push_back(Upper(c));
+            }
+            else {
+                result.push_back(Lower(c));
+            }
+        } 
+        else {
+            result.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+        }
+    }
 }
 #pragma endregion NamingMethods
 
