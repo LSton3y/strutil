@@ -14,6 +14,7 @@
 
 namespace strutil {
 
+#pragma region ForwardDeclarations
 /*
     Forward declarations
 */
@@ -90,12 +91,24 @@ bool Contains(
 );
 
 // Is methods
+bool IsAlNum(char c);
 bool IsAlNum(std::string_view param);
+
+bool IsAlpha(char c);
 bool IsAlpha(std::string_view param);
+
+bool IsDigit(char c);
 bool IsDigit(std::string_view param);
+
+bool IsLower(char c);
 bool IsLower(std::string_view param);
+
+bool IsSpace(char c);
 bool IsSpace(std::string_view param);
+
 bool IsTitle(std::string_view param);
+
+bool IsUpper(char c);
 bool IsUpper(std::string_view param);
 
 // Partition methods
@@ -114,6 +127,12 @@ std::vector<std::string> RSplit(
     std::size_t count = std::string::npos
 );
 
+std::vector<std::string> FlatSplit(
+    const std::vector<std::string>& param,
+    std::string_view separator = " ",
+    std::size_t count = std::string::npos
+);
+
 // Strip methods
 std::string Strip(std::string_view param, std::string_view value = " ");
 std::string LStrip(std::string_view param, std::string_view value = " ");
@@ -126,6 +145,9 @@ std::string TrimEnd(std::string_view param, std::string_view value = " ");
 // Conversion methods
 template <typename T>
 std::string ToString(const T& val);
+
+// Naming convention methods
+std::string ToSnakeCase(std::string_view param);
 
 // Other methods
 std::size_t Count(
@@ -148,9 +170,11 @@ std::string Replace(
 
 std::string Repeat(std::string_view param, std::size_t count);
 std::string Reverse(std::string_view param);
+#pragma endregion ForwardDeclarations
 
 
     
+#pragma region CaseMethods
 /*
     Case methods
 */
@@ -219,9 +243,11 @@ inline std::string Title(std::string_view param) {
 [[nodiscard]] inline bool EqualsIgnoreCase(std::string_view param1, std::string_view param2) {
     return Lower(std::string(param1)) == Lower(std::string(param2));
 }
+#pragma endregion CaseMethods
 
 
 
+#pragma region AlignMethods
 /*
     Align methods
 */
@@ -269,9 +295,11 @@ inline std::string ZFill(std::string_view param, std::size_t nZero) {
     return prefix + std::string(nZero - param.length(), '0') 
         + std::string(param.substr(valueStart));
 }
+#pragma endregion AlignMethods
 
 
 
+#pragma region AffixMethods
 /*
     Prefix and suffix methods
 */
@@ -329,9 +357,11 @@ inline std::string RemoveSuffix(std::string_view param, std::string_view value) 
     
     return std::string(param.substr(0, param.length() - value.length()));
 }
+#pragma endregion AffixMethods
 
 
 
+#pragma region FindMethods
 /*
     Find methods
 */
@@ -432,15 +462,22 @@ inline std::string RemoveSuffix(std::string_view param, std::string_view value) 
 ) {
     return Find(param, value, start, end) != std::string::npos;
 }
+#pragma endregion FindMethods
 
 
+
+#pragma region IsMethods
 /*
     Is methods
 */
 // Returns whether all the characters in the string are alphanumeric
+[[nodiscard]] inline bool IsAlNum(char c) {
+    return std::isalnum(static_cast<unsigned char>(c)) != 0;
+}
+
 [[nodiscard]] inline bool IsAlNum(std::string_view param) {
     for (const auto& c : param) {
-        if (!std::isalnum(static_cast<unsigned char>(c)))
+        if (!IsAlNum(c))
             return false;
     }
 
@@ -448,9 +485,13 @@ inline std::string RemoveSuffix(std::string_view param, std::string_view value) 
 }
 
 // Returns where all the characters in the string are in the alphabet
+[[nodiscard]] inline bool IsAlpha(char c) {
+    return std::isalpha(static_cast<unsigned char>(c)) != 0;
+}
+
 [[nodiscard]] inline bool IsAlpha(std::string_view param) {
     for (const auto& c : param) {
-        if (!std::isalpha(static_cast<unsigned char>(c)))
+        if (!IsAlpha(c))
             return false;
     }
 
@@ -458,9 +499,13 @@ inline std::string RemoveSuffix(std::string_view param, std::string_view value) 
 }
 
 // Returns where all the characters in the string are digits
+[[nodiscard]] inline bool IsDigit(char c) {
+    return std::isdigit(static_cast<unsigned char>(c)) != 0;
+}
+
 [[nodiscard]] inline bool IsDigit(std::string_view param) {
     for (const auto& c : param) {
-        if (!std::isdigit(static_cast<unsigned char>(c)))
+        if (!IsDigit(c))
             return false;
     }
 
@@ -468,16 +513,18 @@ inline std::string RemoveSuffix(std::string_view param, std::string_view value) 
 }
 
 // Returns where all the characters in the string are lowercase
+[[nodiscard]] inline bool IsLower(char c) {
+    return std::islower(static_cast<unsigned char>(c)) != 0;
+}
+
 [[nodiscard]] inline bool IsLower(std::string_view param) {
     bool hasAlpha = false;
 
     for (const auto& c : param) {
-        unsigned char ch = c;
-
-        if (std::isalpha(ch)) {
+        if (std::isalpha(static_cast<unsigned char>(c))) {
             hasAlpha = true;
             
-            if (!std::islower(ch))
+            if (!IsLower(c))
                 return false;
         }
     }
@@ -486,9 +533,13 @@ inline std::string RemoveSuffix(std::string_view param, std::string_view value) 
 }
 
 // Returns where all the characters in the string are whitespaces
+[[nodiscard]] inline bool IsSpace(char c) {
+    return std::isspace(static_cast<unsigned char>(c)) != 0;
+}
+
 [[nodiscard]] inline bool IsSpace(std::string_view param) {
     for (const auto& c : param) {
-        if (!std::isspace(static_cast<unsigned char>(c)))
+        if (!IsSpace(c))
             return false;
     }
 
@@ -525,25 +576,29 @@ inline std::string RemoveSuffix(std::string_view param, std::string_view value) 
 }
 
 // Returns where all the characters in the string are uppercase
+[[nodiscard]] inline bool IsUpper(char c) {
+    return std::isupper(static_cast<unsigned char>(c)) != 0;
+}
+
 [[nodiscard]] inline bool IsUpper(std::string_view param) {
     bool hasAlpha = false;
 
     for (const auto& c : param) {
-        unsigned char ch = c;
-
-        if (std::isalpha(ch)) {
+        if (std::isalpha(static_cast<unsigned char>(c))) {
             hasAlpha = true;
             
-            if (!std::isupper(ch))
+            if (!IsUpper(c))
                 return false;
         }
     }
 
     return hasAlpha;
 }
+#pragma endregion IsMethods
 
 
 
+#pragma region PartitionMethods
 /*
     Partition methods
 */
@@ -597,9 +652,11 @@ inline std::vector<std::string> RPartition(std::string_view param, std::string_v
 
     return v;
 }
+#pragma endregion PartitionMethods
 
 
 
+#pragma region SplitMethods
 /*
     Split methods
 */
@@ -673,7 +730,30 @@ inline std::vector<std::string> RSplit(
 }
 
 
+// Splits all the strings in a vector into a flat vector
+inline std::vector<std::string> FlatSplit(
+    const std::vector<std::string>& param,
+    std::string_view separator,
+    std::size_t count
+) {
+    // Create a new vector to populate
+    std::vector<std::string> flatVector;
 
+    // Iterate through each string in vector
+    for (const auto& string : param) {
+        // Split the string and add each element to the flat vector
+        for (const auto& word : Split(string, separator, count)) {
+            flatVector.push_back(word);
+        }
+    }
+
+    return flatVector;
+}
+#pragma endregion SplitMethods
+
+
+
+#pragma region StripMethods
 /*
     Strip methods
 */
@@ -735,9 +815,11 @@ inline std::string TrimStart(std::string_view param, std::string_view value) {
 inline std::string TrimEnd(std::string_view param, std::string_view value) {
     return RStrip(param, value);
 }
+#pragma endregion StripMethods
 
 
 
+#pragma region ConversionMethods
 /*
     Conversion methods
 */
@@ -765,9 +847,24 @@ std::string ToString(const T& val) {
         throw std::invalid_argument("Unable to cast to string."); 
     }
 }
+#pragma endregion ConversionMethods
 
 
 
+#pragma region NamingMethods
+/*
+    Naming convention methods
+*/
+// Converts a string to snake case
+inline std::string ToSnakeCase(std::string_view param) {
+    std::vector<std::string> array = Split(param, " "); // Split by spaces
+    array = FlatSplit(array, "-"); // Split by dash
+}
+#pragma endregion NamingMethods
+
+
+
+#pragma region Other
 /*
     Other methods
 */
@@ -876,5 +973,6 @@ inline std::string Repeat(std::string_view param, std::size_t count) {
 inline std::string Reverse(std::string_view param) {
     return std::string(param.rbegin(), param.rend());
 }
+#pragma endregion Other
 
 }
