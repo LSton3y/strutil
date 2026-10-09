@@ -155,6 +155,8 @@ std::string ToString(const T& val);
 std::string ToSepCase(std::string_view param, char sep);
 std::string ToSnakeCase(std::string_view param);
 std::string ToKebabCase(std::string_view param);
+std::string ToCamelCase(std::string_view param);
+std::string ToPascalCase(std::string_view param);
 
 // Other methods
 std::size_t Count(
@@ -953,29 +955,70 @@ inline std::string ToKebabCase(std::string_view param) {
 // Converts a string to camel case
 inline std::string ToCamelCase(std::string_view param) {
     std::string result;
-    result.reserve(param.size() + 4); // Reserve space
+    result.reserve(param.size()); // Reserve space
 
-    bool wasLower = true;
-    
+    bool lastWasSep = true;
+
     for (std::size_t i = 0; i < param.size(); ++i) {
         char c = param[i];
 
+        // Check if separator
         if (c == ' ' ||c == '-' || c == '_') {
-            continue;
-        } 
-        else if (std::isupper(static_cast<unsigned char>(c))) {
-            // Insert underscore before uppercase letters if preceded by a lowercase letter or digit
-            if (wasLower && std::isdigit(static_cast<unsigned char>(param[i - 1]))) {
-                result.push_back(Upper(c));
-            }
-            else {
-                result.push_back(Lower(c));
-            }
-        } 
+            if (!lastWasSep)
+                lastWasSep = true;
+        }
+        // If last character was separator, current char is uppercase
+        else if (lastWasSep) {
+            result.push_back(Upper(c));
+            lastWasSep = false;
+        }
+        // Else current char is lowercase
         else {
-            result.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+            result.push_back(Lower(c));
+            lastWasSep = false;
         }
     }
+
+    // First char is lowercase
+    if (!result.empty())
+        result[0] = Lower(result[0]);
+    
+    return result;
+}
+
+
+// Converts a string to pascal case
+inline std::string ToPascalCase(std::string_view param) {
+    std::string result;
+    result.reserve(param.size()); // Reserve space
+
+    bool lastWasSep = true;
+
+    for (std::size_t i = 0; i < param.size(); ++i) {
+        char c = param[i];
+
+        // Check if separator
+        if (c == ' ' ||c == '-' || c == '_') {
+            if (!lastWasSep)
+                lastWasSep = true;
+        }
+        // If last character was separator, current char is uppercase
+        else if (lastWasSep) {
+            result.push_back(Upper(c));
+            lastWasSep = false;
+        }
+        // Else current char is lowercase
+        else {
+            result.push_back(Lower(c));
+            lastWasSep = false;
+        }
+    }
+
+    // First char is uppercase
+    if (!result.empty())
+        result[0] = Upper(result[0]);
+    
+    return result;
 }
 #pragma endregion NamingMethods
 
