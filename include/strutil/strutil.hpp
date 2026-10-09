@@ -883,19 +883,42 @@ std::string ToString(const T& val) {
 */
 // Converts a string to snake case
 inline std::string ToSnakeCase(std::string_view param) {
-    std::vector<std::string> array = Split(param, " "); // Split by spaces
-    array = FlatSplit(array, "-"); // Split by dash
-    
-    // Split camel case into flat vector
-    std::vector<std::string> finalArray;
-    for (const auto& string : array) {
-        for (const auto& result : SplitCamelCase(string)) {
-            finalArray.push_back(Lower(result));
+std::string result;
+    result.reserve(param.size() + 4); // Reserve space to avoid reallocations
+
+    bool lastWasUnderScore = true; // Prevents leading underscores
+
+    for (size_t i = 0; i < param.size(); ++i) {
+        char c = param[i];
+
+        if (c == ' ' || c == '-' || c == '_') {
+            if (!lastWasUnderScore) {
+                result.push_back('_');
+                lastWasUnderScore = true;
+            }
+        } 
+        else if (std::isupper(static_cast<unsigned char>(c))) {
+            // Insert underscore before uppercase letters if preceded by a lowercase letter or digit
+            if (!lastWasUnderScore && i > 0 && 
+                (std::islower(static_cast<unsigned char>(param[i - 1])) || 
+                 std::isdigit(static_cast<unsigned char>(param[i - 1])))) {
+                result.push_back('_');
+            }
+            result.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+            lastWasUnderScore = false;
+        } 
+        else {
+            result.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+            lastWasUnderScore = false;
         }
     }
 
-    // Join vector with underscores
-    return Join(finalArray, "_");
+    // Clean up trailing underscore if the string ended with a separator
+    if (!result.empty() && result.back() == '_') {
+        result.pop_back();
+    }
+
+    return result;
 }
 #pragma endregion NamingMethods
 
