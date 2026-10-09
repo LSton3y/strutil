@@ -885,6 +885,17 @@ std::string ToString(const T& val) {
 inline std::string ToSnakeCase(std::string_view param) {
     std::vector<std::string> array = Split(param, " "); // Split by spaces
     array = FlatSplit(array, "-"); // Split by dash
+    
+    // Split camel case into flat vector
+    std::vector<std::string> finalArray;
+    for (const auto& string : array) {
+        for (const auto& result : SplitCamelCase(string)) {
+            finalArray.push_back(Lower(result));
+        }
+    }
+
+    // Join vector with underscores
+    return Join(finalArray, "_");
 }
 #pragma endregion NamingMethods
 
