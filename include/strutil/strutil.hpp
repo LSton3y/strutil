@@ -133,6 +133,8 @@ std::vector<std::string> FlatSplit(
     std::size_t count = std::string::npos
 );
 
+std::vector<std::string> SplitCamelCase(std::string_view param);
+
 // Strip methods
 std::string Strip(std::string_view param, std::string_view value = " ");
 std::string LStrip(std::string_view param, std::string_view value = " ");
@@ -748,6 +750,30 @@ inline std::vector<std::string> FlatSplit(
     }
 
     return flatVector;
+}
+
+
+// Splits a camel case string
+std::vector<std::string> SplitCamelCase(std::string_view param) {
+    // Create a new vector to populate
+    std::vector<std::string> array;
+    if (param.empty())
+        return array;
+
+    // Iterate through all characters in param
+    std::size_t start = 0;
+    for (std::size_t i = 1; i < param.length(); i++) {
+        // Check if current is upper and prev is lower
+        if (IsUpper(param[i]) && IsLower(param[i - 1])) {
+            array.push_back(std::string(param.substr(start, i - start)));
+            start = i;
+        }
+    }
+
+    // Append final section
+    array.push_back(std::string(param.substr(start)));
+
+    return array;
 }
 #pragma endregion SplitMethods
 
