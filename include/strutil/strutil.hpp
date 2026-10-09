@@ -780,7 +780,7 @@ std::vector<std::string> SplitCamelCase(std::string_view param) {
 
     // Iterate through all characters in param
     std::size_t start = 0;
-    for (std::size_t i = 1; i < param.length(); i++) {
+    for (std::size_t i = 1; i < param.length(); ++i) {
         // Check if current is upper and prev is lower
         if (IsUpper(param[i]) && IsLower(param[i - 1])) {
             array.push_back(std::string(param.substr(start, i - start)));
@@ -904,7 +904,8 @@ inline std::string ToSepCase(std::string_view param, char sep) {
     std::string result;
     result.reserve(param.size() + 4); // Reserve space
 
-    bool lastWasSep = true; // Prevents leading separators
+    bool lastWasSep = true;
+    bool lastWasUpper;
 
     for (std::size_t i = 0; i < param.size(); ++i) {
         char c = param[i];
@@ -914,20 +915,26 @@ inline std::string ToSepCase(std::string_view param, char sep) {
                 result.push_back(sep);
                 lastWasSep = true;
             }
+            lastWasUpper = false;
         } 
-        else if (std::isupper(static_cast<unsigned char>(c))) {
+        else if (IsUpper(c)) {
             // Insert underscore before uppercase letters if preceded by a lowercase letter or digit
-            if (!lastWasSep && i > 0 && 
-                (std::islower(static_cast<unsigned char>(param[i - 1])) || 
-                 std::isdigit(static_cast<unsigned char>(param[i - 1])))) {
+            bool precededByLowerOrDigit = (i > 0 
+                && (IsLower(param[i - 1]) 
+                || IsDigit(param[i - 1])));
+            bool followedByLower = (i + 1 < param.length() && IsLower(param[i + 1]));
+
+            if (!lastWasSep && (precededByLowerOrDigit || (lastWasUpper && followedByLower))) {
                 result.push_back(sep);
             }
-            result.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+            result.push_back(Lower(c));
             lastWasSep = false;
+            lastWasUpper = true;
         } 
         else {
-            result.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+            result.push_back(Lower(c));
             lastWasSep = false;
+            lastWasUpper = false;
         }
     }
 
@@ -952,73 +959,40 @@ inline std::string ToKebabCase(std::string_view param) {
 }
 
 
+// Shared logic for Camel and Pascal case conversions to eliminate duplication
+inline std::string ToCamelPascalImpl(std::string_view param, bool capitalizeFirst) {
+    std::string result;     
+    result.reserve(param.size()); 
+    bool nextIsUpper = false;       
+
+    for (std::size_t i = 0; i < param.length(); ++i) {         
+        char c = param[i];          
+
+        if (c == ' ' || c == '-' || c == '_') {             
+            nextIsUpper = true;         
+        } else {
+            bool followedByLower = (i + 1 < param.length() && IsLower(param[i + 1]));    
+            result.push_back((nextIsUpper || (followedByLower && IsUpper(c))) ? Upper(c) : Lower(c));      
+            nextIsUpper = false; 
+        }     
+    }    
+    
+    if (!result.empty())
+        result[0] = capitalizeFirst ? Upper(result[0]) : Lower(result[0]);
+
+    return result;
+}
+
+
 // Converts a string to camel case
 inline std::string ToCamelCase(std::string_view param) {
-    std::string result;
-    result.reserve(param.size()); // Reserve space
-
-    bool lastWasSep = true;
-
-    for (std::size_t i = 0; i < param.size(); ++i) {
-        char c = param[i];
-
-        // Check if separator
-        if (c == ' ' ||c == '-' || c == '_') {
-            if (!lastWasSep)
-                lastWasSep = true;
-        }
-        // If last character was separator, current char is uppercase
-        else if (lastWasSep) {
-            result.push_back(Upper(c));
-            lastWasSep = false;
-        }
-        // Else current char is lowercase
-        else {
-            result.push_back(Lower(c));
-            lastWasSep = false;
-        }
-    }
-
-    // First char is lowercase
-    if (!result.empty())
-        result[0] = Lower(result[0]);
-    
-    return result;
+    return ToCamelPascalImpl(param, false);
 }
 
 
 // Converts a string to pascal case
 inline std::string ToPascalCase(std::string_view param) {
-    std::string result;
-    result.reserve(param.size()); // Reserve space
-
-    bool lastWasSep = true;
-
-    for (std::size_t i = 0; i < param.size(); ++i) {
-        char c = param[i];
-
-        // Check if separator
-        if (c == ' ' ||c == '-' || c == '_') {
-            if (!lastWasSep)
-                lastWasSep = true;
-        }
-        // If last character was separator, current char is uppercase
-        else if (lastWasSep) {
-            result.push_back(Upper(c));
-            lastWasSep = false;
-        }
-        // Else current char is lowercase
-        else {
-            result.push_back(Lower(c));
-            lastWasSep = false;
-        }
-    }
-
-    // First char is uppercase
-    if (!result.empty())
-        result[0] = Upper(result[0]);
-    
-    return result;
+    return ToCamelPascalImpl(param, true);
 }
 #pragma endregion NamingMethods
 
