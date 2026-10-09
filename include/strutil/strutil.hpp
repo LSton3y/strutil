@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cctype>
 #include <type_traits>
+#include <optional>
 
 
 namespace strutil {
@@ -149,7 +150,10 @@ std::string TrimEnd(std::string_view param, std::string_view value = " ");
 
 // Conversion methods
 template <typename T>
-std::string ToString(const T& val);
+std::optional<std::string> ToString(const T& val);
+std::optional<int> ToInt(const std::string& param);
+std::optional<float> ToFloat(const std::string& param);
+std::optional<double> ToDouble(const std::string& param);
 
 // Naming convention methods
 std::string ToSepCase(std::string_view param, char sep);
@@ -869,7 +873,7 @@ inline std::string TrimEnd(std::string_view param, std::string_view value) {
 */
 // Convert to string
 template <typename T>
-std::string ToString(const T& val) {
+std::optional<std::string> ToString(const T& val) {
     // If it's already a string type or string literal, cast it directly
     if constexpr (std::is_convertible_v<T, std::string>) {
         return std::string(val);
@@ -888,7 +892,70 @@ std::string ToString(const T& val) {
     } 
     // Else throw error
     else {
-        throw std::invalid_argument("Unable to cast to string."); 
+        return std::nullopt;
+    }
+}
+
+
+// Convert string to int
+std::optional<int> ToInt(const std::string& param) {
+    try {
+        std::size_t pos = 0;
+        int value = std::stoi(param, &pos);
+        
+        // Check new value has same size as original
+        if (pos == param.length()) {
+            return value;
+        }
+        return std::nullopt; 
+    }
+    catch (const std::invalid_argument&) {
+        return std::nullopt;
+    }
+    catch (const std::out_of_range&) {
+        return std::nullopt;
+    }
+}
+
+
+// Convert string to float
+std::optional<float> ToFloat(const std::string& param) {
+    try {
+        std::size_t pos = 0;
+        int value = std::stof(param, &pos);
+        
+        // Check new value has same size as original
+        if (pos == param.length()) {
+            return value;
+        }
+        return std::nullopt; 
+    }
+    catch (const std::invalid_argument&) {
+        return std::nullopt;
+    }
+    catch (const std::out_of_range&) {
+        return std::nullopt;
+    }
+}
+
+
+// Convert string to double
+std::optional<double> ToDouble(const std::string& param) {
+    try {
+        std::size_t pos = 0;
+        int value = std::stod(param, &pos);
+        
+        // Check new value has same size as original
+        if (pos == param.length()) {
+            return value;
+        }
+        return std::nullopt; 
+    }
+    catch (const std::invalid_argument&) {
+        return std::nullopt;
+    }
+    catch (const std::out_of_range&) {
+        return std::nullopt;
     }
 }
 #pragma endregion ConversionMethods
