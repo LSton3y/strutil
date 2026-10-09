@@ -776,7 +776,7 @@ inline std::vector<std::string> FlatSplit(
 
 
 // Splits a camel case string
-std::vector<std::string> SplitCamelCase(std::string_view param) {
+inline std::vector<std::string> SplitCamelCase(std::string_view param) {
     // Create a new vector to populate
     std::vector<std::string> array;
     if (param.empty())
@@ -873,7 +873,7 @@ inline std::string TrimEnd(std::string_view param, std::string_view value) {
 */
 // Convert to string
 template <typename T>
-std::optional<std::string> ToString(const T& val) {
+inline std::optional<std::string> ToString(const T& val) {
     // If it's already a string type or string literal, cast it directly
     if constexpr (std::is_convertible_v<T, std::string>) {
         return std::string(val);
@@ -898,7 +898,7 @@ std::optional<std::string> ToString(const T& val) {
 
 
 // Convert string to int
-std::optional<int> ToInt(const std::string& param) {
+inline std::optional<int> ToInt(const std::string& param) {
     try {
         std::size_t pos = 0;
         int value = std::stoi(param, &pos);
@@ -919,10 +919,10 @@ std::optional<int> ToInt(const std::string& param) {
 
 
 // Convert string to float
-std::optional<float> ToFloat(const std::string& param) {
+inline std::optional<float> ToFloat(const std::string& param) {
     try {
         std::size_t pos = 0;
-        int value = std::stof(param, &pos);
+        float value = std::stof(param, &pos);
         
         // Check new value has same size as original
         if (pos == param.length()) {
@@ -940,10 +940,10 @@ std::optional<float> ToFloat(const std::string& param) {
 
 
 // Convert string to double
-std::optional<double> ToDouble(const std::string& param) {
+inline std::optional<double> ToDouble(const std::string& param) {
     try {
         std::size_t pos = 0;
-        int value = std::stod(param, &pos);
+        double value = std::stod(param, &pos);
         
         // Check new value has same size as original
         if (pos == param.length()) {
@@ -1106,7 +1106,11 @@ inline std::string ToPascalCase(std::string_view param) {
 // Returns a formatted string
 template <typename... Args>
 inline std::string Format(std::string param, Args... args) {
-    ((param = Replace(param, "{}", ToString(args), 1)), ...);
+    (([&] {
+        auto value = ToString(args);
+        if (value)
+            param = Replace(param, "{}", *value, 1);
+    }()), ...);
     return param;
 }
 
