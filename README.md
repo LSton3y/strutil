@@ -20,7 +20,7 @@ int main() {
 
 ### Option 1: Copy the header
 
-Copy `include/strutil/strutil.hpp` into your project and include it:
+Download **[strutil/strutil.hpp](https://github.com/LSton3y/strutil/releases/tag/v0.1.0/strutil.hpp)**,  into your project and include it:
 
 ```cpp
 #include "strutil.hpp"
@@ -33,7 +33,7 @@ include(FetchContent)
 
 FetchContent_Declare(
     strutil
-    GIT_REPOSITORY https://github.com/<you>/strutil.git
+    GIT_REPOSITORY https://github.com/LSton3y/strutil.git
     GIT_TAG main
 )
 
